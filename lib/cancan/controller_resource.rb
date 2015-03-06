@@ -28,6 +28,8 @@ module CanCan
 
     def load_resource
       unless skip?(:load)
+        self.resource_class ||= load_resource_class
+
         if load_instance?
           self.resource_instance ||= load_resource_instance
         elsif load_collection?
@@ -146,6 +148,14 @@ module CanCan
     # If +false+ is passed in it will use the resource name as a symbol in which case it should
     # only be used for authorization, not loading since there's no class to load through.
     def resource_class
+      @controller.instance_variable_get("@#{instance_name}_class")
+    end
+
+    def resource_class=(klass)
+      @controller.instance_variable_set("@#{instance_name}_class", klass)
+    end
+
+    def load_resource_class
       case @options[:class]
       when false  then name.to_sym
       when nil    then namespaced_name.to_s.camelize.constantize
